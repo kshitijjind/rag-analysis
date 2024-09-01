@@ -1,5 +1,5 @@
 import config
-from src.common.constants import GENERATE_TEXT_PROMPT
+from src.common.constants import GENERATE_TEXT_PROMPT, SYSTEM_PROMPT
 from src.database.elasticsearchConfig import connect_to_elasticsearch
 from logger import logger
 from src.dataset.loadDataset import read_pdf, create_chunks, loadDataset
@@ -118,7 +118,7 @@ def generate_text_from_gpt(query, description, correlation_id):
         prompt = GENERATE_TEXT_PROMPT.format(**{"user_query": query, "description": description})
 
         # Get response from GPT
-        ai_response = gpt_turbo_model(prompt, config.SYSTEM_PROMPT, correlation_id)
+        ai_response = gpt_turbo_model(prompt, SYSTEM_PROMPT, correlation_id)
 
         # Extract the response from GPT
         ai_response = ai_response.choices[0].message.content

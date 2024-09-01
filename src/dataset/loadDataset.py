@@ -1,4 +1,7 @@
 import PyPDF2
+import os
+
+file = os.path.join(os.path.dirname(os.getcwd()), "rag-analysis/src/dataset/ai_doc.pdf")
 
 
 def read_pdf(file_path):
@@ -15,15 +18,27 @@ def read_pdf(file_path):
 
 
 def create_chunks(text):
-    # Split the text into chunks at each full stop
-    # We include the full stop in the chunk by splitting on '. ' and then adding it back
-    chunks = [chunk.strip() + '.' for chunk in text.split('. ') if chunk]
+    # Create text chunks of 500 words
+    text_chunks = []
 
-    return chunks
+    words = text.split()
+    chunk = ""
+    for word in words:
+        if len(chunk.split()) < 250:
+            chunk += word + " "
+        else:
+            text_chunks.append(chunk.strip())
+            chunk = word + " "
+
+    # Add the last chunk if it contains any words
+    if chunk:
+        text_chunks.append(chunk.strip())
+
+    return text_chunks
 
 
 def loadDataset():
-    text_chunks = create_chunks(read_pdf("src/dataset/ai_doc.pdf"))
+    text_chunks = create_chunks(read_pdf(file))
 
     dataset = []
     for text in text_chunks:
