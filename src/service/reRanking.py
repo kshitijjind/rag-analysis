@@ -12,7 +12,7 @@ def rerank(results, query):
         if not results:
             return []
         
-        # Extract quote to be re-ranked
+        # Extract text to be re-ranked
         texts = []
         for data in results:
             text = "Text: " + data['text']

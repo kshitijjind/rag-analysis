@@ -16,7 +16,7 @@ ENTITY_EMBEDDINGS_INDEX = os.getenv('ENTITY_EMBEDDINGS_INDEX', 'rag_entity_embed
 TEXT_ENTITY_EMBEDDINGS_INDEX = os.getenv('TEXT_ENTITY_EMBEDDINGS_INDEX', 'rag_text_entity_embeddings_index')
 
 # Open AI
-SYSTEM_PROMPT = get_environment_variable('SYSTEM_PROMPT', 'Best quote and author Response generator')
+SYSTEM_PROMPT = get_environment_variable('SYSTEM_PROMPT', 'You are best AI Response generator and generate a response for the user query:')
 MAX_CHUNK_LENGTH = get_environment_variable('MAX_CHUNK_LENGTH', "10000")
 GPT_CHAT_MODEL = get_environment_variable('GPT_CHAT_MODEL', 'gpt-3.5-turbo-1106')
 RETRY_STOP = get_environment_variable('RETRY_STOP', '3')
