@@ -15,7 +15,7 @@ def rerank(results, query):
         # Extract quote to be re-ranked
         texts = []
         for data in results:
-            text = "Quote: " + data['quote'] + " Author: " + data['author'] + " Tags: " + str(data['tags'])
+            text = "Text: " + data['text']
             texts.append(text)
 
         # Generate (query, document) pairs
