@@ -1,0 +1,62 @@
+Why we have choice -> ext-embedding-ada-002
+
+| **Feature**                   | **Text-embedding-ada-002**                                  | **Text-embedding-3-small**                                        | **Text-embedding-3-large**                                      |
+|-------------------------------|--------------------------------------------------------------|-------------------------------------------------------------------|-----------------------------------------------------------------|
+| **Capability**                | Most capable 2nd generation embedding model, replacing 16 first-generation models | Increased performance over 2nd generation ada embedding model       | Most capable embedding model but may be overkill for some tasks |
+| **Embedding Dimension**       | 1,536                                                        | 1,536                                                             | 3,072                                                           |
+| **Language Support**          | Good for both English and non-English                        | Excellent for both English and non-English                         | Excellent for both English and non-English                      |
+| **Performance**               | Strong performance for general-purpose tasks                | Higher performance and efficiency than `text-embedding-ada-002`   | Highest performance for complex tasks requiring deep understanding |
+| **Use Case**                  | Suitable for general-purpose tasks across various domains   | Ideal for tasks that need a strong balance between performance and efficiency | Best for tasks requiring maximum accuracy and deep contextual understanding |
+
+
+### 1. **Embedding Search with Elasticsearch (Multilingual Support)**
+**Strengths:**
+- **Semantic Understanding**: Embedding search captures the meaning and context of words, allowing for more accurate retrieval, especially in multilingual contexts.
+- **Multilingual Capability**: Embedding models like BERT or multilingual embeddings can handle multiple languages, making it ideal for global datasets.
+- **Handling Synonyms**: It naturally understands synonyms and similar phrases, making the search more robust.
+- **Vector Search**: Supports complex queries like k-NN (k-Nearest Neighbors), which is useful in finding the most semantically similar documents.
+
+**Weaknesses:**
+- **Resource-Intensive**: Requires significant computational resources for generating and indexing embeddings.
+- **Complexity**: More complex to implement and tune compared to traditional keyword-based searches.
+- **Latency**: May have higher query latency due to the complexity of vector computations.
+- **Lack of Exact Match**: While excellent for semantic retrieval, it may miss exact matches unless carefully tuned.
+
+### 2. **Fuzzy Search with Elasticsearch**
+**Strengths:**
+- **Typo Tolerance**: Effective in handling misspellings, typos, and small variations in query terms.
+- **Simple to Implement**: Built-in support in Elasticsearch makes it easy to configure and use.
+- **Flexible Matching**: Can be fine-tuned to adjust the fuzziness level, balancing between matching accuracy and recall.
+
+**Weaknesses:**
+- **Limited Semantic Understanding**: Fuzzy search focuses on string similarity rather than meaning, so it might not capture the intent behind the query.
+- **Performance**: Can be slower than exact match searches, especially for large datasets with high fuzziness levels.
+- **False Positives**: Might return irrelevant results if the fuzziness level is too high, affecting precision.
+
+### 3. **TF-IDF Search**
+**Strengths:**
+- **Simple and Fast**: Easy to implement and quick to compute, making it suitable for smaller datasets.
+- **Good for Keyword Matching**: Effective for exact keyword matching, where the importance of terms is based on their frequency in the document and the corpus.
+- **Interpretable**: The scoring mechanism is transparent, making it easy to understand why certain documents are ranked higher.
+
+**Weaknesses:**
+- **No Semantic Understanding**: TF-IDF treats words as independent entities and doesn't capture the context or meaning, leading to poor performance on queries requiring semantic understanding.
+- **Not Robust to Synonyms or Variations**: Different words with similar meanings are treated as distinct, which can lead to lower recall.
+- **Limited Scalability**: Not ideal for very large datasets or complex queries, especially when compared to more advanced techniques.
+
+### 4. **BM25 Search**
+**Strengths:**
+- **Strong Baseline**: BM25 is a widely used and well-accepted algorithm for text retrieval, balancing TF-IDF with term saturation and document length normalization.
+- **Effective for Keyword Matching**: Like TF-IDF, BM25 excels in exact keyword matching but with more sophisticated scoring.
+- **Customizable**: Parameters like `k1` (term frequency saturation) and `b` (document length normalization) allow for fine-tuning to specific use cases.
+
+**Weaknesses:**
+- **Limited Semantic Understanding**: While better than pure TF-IDF, BM25 still doesn't fully capture the context or meaning of words.
+- **Not Ideal for Short Queries**: May struggle with very short queries or documents where term frequency isn't a strong signal.
+- **Scaling**: While BM25 scales better than TF-IDF, it may still face challenges with very large datasets or highly complex queries.
+
+### Summary
+- **Embedding Search** is the most powerful for understanding the context and meaning, especially in multilingual environments, but it's resource-intensive and complex to implement.
+- **Fuzzy Search** is great for handling typos and slight variations but lacks semantic depth.
+- **TF-IDF** is simple and fast, ideal for exact keyword matching but limited in understanding context and handling variations.
+- **BM25** offers a balanced approach with effective keyword matching and better scalability but still falls short in semantic understanding compared to embeddings.
