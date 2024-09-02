@@ -41,32 +41,28 @@ def getRagAnalysisResponse(request, correlation_id):
         embedding_search = search_es_embeddings(query)
         embedding_search_rank = rerank(embedding_search, query)
         embedding_search_output = generate_text_from_gpt(query, embedding_search_rank, correlation_id)
-        embedding_precision, embedding_recall = calculate_precision_recall(embedding_search_rank, embedding_search)
 
         # Search for similar text in Elasticsearch using fuzzy matching, then rerank and generate text using GPT from
         # the top result
         fuzzy_search = search_es_fuzzy(query)
         fuzzy_search_rank = rerank(fuzzy_search, query)
         fuzzy_search_output = generate_text_from_gpt(query, fuzzy_search_rank, correlation_id)
-        fuzzy_precision, fuzzy_recall = calculate_precision_recall(embedding_search_rank, embedding_search)
 
         # Search for similar text using TF-IDF, then rerank and generate text using GPT from the top result
         tfidf_search = tfidf_vectorizer(query)
         tfidf_search_rank = rerank(tfidf_search, query)
         tfidf_search_output = generate_text_from_gpt(query, tfidf_search_rank, correlation_id)
-        tfidf_precision, tfidf_recall = calculate_precision_recall(embedding_search_rank, embedding_search)
 
         # Search for similar text using BM25, then rerank and generate text using GPT from the top result
         bm25_search = bm25_vectorizer(query)
         bm25_search_rank = rerank(bm25_search, query)
         bm25_search_output = generate_text_from_gpt(query, bm25_search_rank, correlation_id)
-        bm25_precision, bm25_recall = calculate_precision_recall(embedding_search_rank, embedding_search)
 
         return {
-            "embedding_search": {"results": embedding_search_rank, "output": embedding_search_output, "precision": embedding_precision, "recall": embedding_recall},
-            "fuzzy_search": {"results": fuzzy_search_rank, "output": fuzzy_search_output, "precision": fuzzy_precision, "recall": fuzzy_recall},
-            "tfidf_search": {"results": tfidf_search_rank, "output": tfidf_search_output, "precision": tfidf_precision, "recall": tfidf_recall},
-            "bm25_search": {"results": bm25_search_rank, "output": bm25_search_output, "precision": bm25_precision, "recall": bm25_recall}
+            "embedding_search": {"results": embedding_search_rank, "output": embedding_search_output},
+            "fuzzy_search": {"results": fuzzy_search_rank, "output": fuzzy_search_output},
+            "tfidf_search": {"results": tfidf_search_rank, "output": tfidf_search_output},
+            "bm25_search": {"results": bm25_search_rank, "output": bm25_search_output}
         }
     except Exception as e:
         logger.error(f"An error occurred while fetching RAG analysis. {e}")
@@ -99,7 +95,9 @@ def search_es_embeddings(search_request):
         response = client.search(index=config.TEXT_ENTITY_EMBEDDINGS_INDEX, body=query)
         results = []
         for hit in response["hits"]["hits"]:
-            results.append(hit["_source"])
+            source = hit["_source"]
+            source['score'] = hit["_score"]
+            results.append(source)
         return results
     except Exception as e:
         logger.error(f"An error occurred while searching for similar embeddings in Elasticsearch. {e}")
@@ -161,8 +159,11 @@ def search_es_fuzzy(search_request):
         }
         response = client.search(index=config.TEXT_ENTITY_EMBEDDINGS_INDEX, body=query)
         results = []
+
         for hit in response["hits"]["hits"]:
-            results.append(hit["_source"])
+            source = hit["_source"]
+            source['score'] = hit["_score"]
+            results.append(source)
         return results
     except Exception as e:
         logger.error(f"An error occurred while searching for similar text in Elasticsearch using fuzzy matching. {e}")
@@ -233,26 +234,3 @@ def bm25_vectorizer(search_request, top_n=3):
     except Exception as e:
         logger.error(f"An error occurred while vectorizing search request using BM25. {e}")
         raise Exception(e)
-
-
-def calculate_precision_recall(retrieved_items, relevant_items):
-
-    print(retrieved_items)
-    print(relevant_items)
-    # From dict retrieve list of text
-    retrieved_items = [item['text'] for item in retrieved_items]
-    relevant_items = [item['text'] for item in relevant_items]
-
-
-    # Convert lists to sets for easier computation
-    retrieved_set = set(retrieved_items)
-    relevant_set = set(relevant_items)
-
-    true_positives = len(retrieved_set.intersection(relevant_set))
-    false_positives = len(retrieved_set - relevant_set)
-    false_negatives = len(relevant_set - retrieved_set)
-
-    precision = true_positives / (true_positives + false_positives) if (true_positives + false_positives) > 0 else 0
-    recall = true_positives / (true_positives + false_negatives) if (true_positives + false_negatives) > 0 else 0
-
-    return precision, recall
