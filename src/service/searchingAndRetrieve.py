@@ -1,8 +1,9 @@
 import config
-from src.common.constants import GENERATE_TEXT_PROMPT, SYSTEM_PROMPT
+from src.common.constants import GENERATE_TEXT_PROMPT, SYSTEM_PROMPT, TECHNIQUES
 from src.database.elasticsearchConfig import connect_to_elasticsearch
 from logger import logger
 from src.dataset.loadDataset import read_pdf, create_chunks, loadDataset
+from src.service.graph import create_all_graphs_to_pdf
 from src.service.reRanking import rerank
 from src.utils.openAiGpt import create_embedding, gpt_turbo_model
 from sklearn.feature_extraction.text import TfidfVectorizer
@@ -58,6 +59,9 @@ def getRagAnalysisResponse(request, correlation_id):
         bm25_search_rank = rerank(bm25_search, query)
         bm25_search_output = generate_text_from_gpt(query, bm25_search_rank, correlation_id)
 
+        score, re_rank_score = extract_score_and_re_rank_score(bm25_search_rank, embedding_search_rank, fuzzy_search_rank, tfidf_search_rank)
+        create_all_graphs_to_pdf(TECHNIQUES, score, re_rank_score, correlation_id)
+
         return {
             "embedding_search": {"results": embedding_search_rank, "output": embedding_search_output},
             "fuzzy_search": {"results": fuzzy_search_rank, "output": fuzzy_search_output},
@@ -67,6 +71,18 @@ def getRagAnalysisResponse(request, correlation_id):
     except Exception as e:
         logger.error(f"An error occurred while fetching RAG analysis. {e}")
         raise Exception(e)
+
+
+def extract_score_and_re_rank_score(bm25_search_rank, embedding_search_rank, fuzzy_search_rank, tfidf_search_rank):
+    scores = []
+    rerankScores = []
+    # Append scores for each search rank
+    append_scores(embedding_search_rank, scores, rerankScores)
+    append_scores(fuzzy_search_rank, scores, rerankScores)
+    append_scores(tfidf_search_rank, scores, rerankScores)
+    append_scores(bm25_search_rank, scores, rerankScores)
+
+    return scores, rerankScores
 
 
 def search_es_embeddings(search_request):
@@ -234,3 +250,12 @@ def bm25_vectorizer(search_request, top_n=3):
     except Exception as e:
         logger.error(f"An error occurred while vectorizing search request using BM25. {e}")
         raise Exception(e)
+
+
+def append_scores(search_rank, scores, rerankScores):
+    if search_rank and len(search_rank) > 0:
+        scores.append(search_rank[0].get('score', 0))
+        rerankScores.append(search_rank[0].get('rerank_score', 0))
+    else:
+        scores.append(0)
+        rerankScores.append(0)

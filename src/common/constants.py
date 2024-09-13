@@ -52,3 +52,4 @@ You are an advanced AI assistant designed to provide accurate, informative, and 
     - Prioritize delivering responses efficiently without sacrificing accuracy.
     - If you do not know the answer or need additional information, communicate this clearly and suggest where the user might find the answer.
 """
+TECHNIQUES = ['bm25_search', 'tfifd', 'embedding', 'fuzzy']
