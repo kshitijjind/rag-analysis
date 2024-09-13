@@ -1,3 +1,6 @@
+import matplotlib
+
+matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 import numpy as np
 from matplotlib.backends.backend_pdf import PdfPages
@@ -80,8 +83,13 @@ def create_pie_chart_rerank_scores(techniques, rerank_scores, ax):
 
 
 def create_all_graphs_to_pdf(techniques, rerank_scores, scores, correlation_id):
+    # Define the path for the PDF
+    pdf_dir = 'reports'
+    pdf_path = os.path.join(pdf_dir, f'comparison_report_{correlation_id}.pdf')
 
-    pdf_path = os.path.join('reports', f'comparison_report_{correlation_id}.pdf')
+    # Create the 'reports' directory if it does not exist
+    if not os.path.exists(pdf_dir):
+        os.makedirs(pdf_dir)
 
     # Create a PDF file to save all graphs
     with PdfPages(pdf_path) as pdf:

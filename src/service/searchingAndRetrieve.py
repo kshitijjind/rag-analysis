@@ -59,7 +59,7 @@ def getRagAnalysisResponse(request, correlation_id):
         bm25_search_rank = rerank(bm25_search, query)
         bm25_search_output = generate_text_from_gpt(query, bm25_search_rank, correlation_id)
 
-        score, re_rank_score = extract_score_and_re_rank_score(bm25_search_rank, embedding_search_rank, fuzzy_search_rank, tfidf_search_rank)
+        score, re_rank_score = extract_score_and_re_rank_score(bm25_search_rank, tfidf_search_rank, embedding_search_rank, fuzzy_search_rank)
         create_all_graphs_to_pdf(TECHNIQUES, score, re_rank_score, correlation_id)
 
         return {
@@ -255,7 +255,7 @@ def bm25_vectorizer(search_request, top_n=3):
 def append_scores(search_rank, scores, rerankScores):
     if search_rank and len(search_rank) > 0:
         scores.append(search_rank[0].get('score', 0))
-        rerankScores.append(search_rank[0].get('rerank_score', 0))
+        rerankScores.append(search_rank[0].get('rerankScore', 0))
     else:
         scores.append(0)
         rerankScores.append(0)
